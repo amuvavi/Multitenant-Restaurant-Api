@@ -1,5 +1,3 @@
-version: '3.7'
-
 services:
   postgres:
     image: postgres:latest
@@ -25,6 +23,37 @@ services:
     depends_on:
       - postgres
     restart: unless-stopped
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+
+  theorcshack_api:
+    build: ./theorcshack
+    container_name: theorcshack_api
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: dancingponysvc
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: dancingpony
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+
+  postgres_exporter:
+    image: wrouesnel/postgres_exporter
+    environment:
+      DATA_SOURCE_NAME: "postgresql://dancingponysvc:password@postgres:5432/dancingpony?sslmode=disable"
+    ports:
+      - "9187:9187"
+    depends_on:
+      - postgres
 
 volumes:
   postgres_data_2:
